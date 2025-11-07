@@ -5,19 +5,45 @@ import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { PaginationComponent } from '@/components/pagination-component';
+import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 async function getPublicJournals(page: number = 1) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/journals?page=${page}&limit=12&privacy=PUBLIC`, {
-      cache: 'no-store',
-    });
+    const limit = 12;
+    const skip = (page - 1) * limit;
 
-    if (!res.ok) {
-      return { journals: [], pagination: { page: 1, limit: 12, total: 0, totalPages: 0 } };
-    }
+    const [journals, total] = await Promise.all([
+      prisma.journal.findMany({
+        where: { privacy: 'PUBLIC' },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+      }),
+      prisma.journal.count({
+        where: { privacy: 'PUBLIC' },
+      }),
+    ]);
 
-    return res.json();
+    return {
+      journals,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch journals:', error);
     return { journals: [], pagination: { page: 1, limit: 12, total: 0, totalPages: 0 } };

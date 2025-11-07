@@ -24,31 +24,59 @@ export const dynamic = 'force-dynamic';
 
 async function getDashboardData(userId: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    
-    const [storiesRes, journalsRes, recentStoriesRes] = await Promise.all([
-      fetch(`${baseUrl}/api/stories?authorId=${userId}&limit=100`, { cache: 'no-store' }),
-      fetch(`${baseUrl}/api/journals?authorId=${userId}&limit=100`, { cache: 'no-store' }),
-      fetch(`${baseUrl}/api/stories?limit=5`, { cache: 'no-store' }),
+    // Fetch data directly from database instead of API routes
+    const [myStories, myJournals, recentStories, moods] = await Promise.all([
+      prisma.story.findMany({
+        where: { authorId: userId },
+        include: {
+          _count: {
+            select: {
+              reactions: true,
+              comments: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.journal.findMany({
+        where: { authorId: userId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.story.findMany({
+        where: {
+          privacy: { not: 'PRIVATE' },
+        },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          _count: {
+            select: {
+              reactions: true,
+              comments: true,
+            },
+          },
+        },
+      }),
+      prisma.mood.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 7,
+      }),
     ]);
 
-    // Fetch moods directly from database
-    const moods = await prisma.mood.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: 7,
-    });
-
-    const stories = storiesRes.ok ? await storiesRes.json() : { stories: [], pagination: { total: 0 } };
-    const journals = journalsRes.ok ? await journalsRes.json() : { journals: [], pagination: { total: 0 } };
-    const recentStories = recentStoriesRes.ok ? await recentStoriesRes.json() : { stories: [] };
-
     return {
-      myStoriesCount: stories.pagination.total,
-      myJournalsCount: journals.pagination.total,
-      myStories: stories.stories || [],
-      recentStories: recentStories.stories || [],
-      moods: moods || [],
+      myStoriesCount: myStories.length,
+      myJournalsCount: myJournals.length,
+      myStories,
+      recentStories,
+      moods,
     };
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error);

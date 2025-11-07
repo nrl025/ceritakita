@@ -8,25 +8,45 @@ import { id } from 'date-fns/locale';
 import { PaginationComponent } from '@/components/pagination-component';
 import { getCurrentUser } from '@/lib/auth';
 import { DeleteJournalButton } from '@/components/delete-journal-button';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 async function getJournals(page: number = 1, authorId?: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const url = authorId
-      ? `${baseUrl}/api/journals?page=${page}&limit=10&authorId=${authorId}`
-      : `${baseUrl}/api/journals?page=${page}&limit=10`;
-    
-    const res = await fetch(url, {
-      cache: 'no-store',
-    });
+    const limit = 10;
+    const skip = (page - 1) * limit;
 
-    if (!res.ok) {
-      return { journals: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };
-    }
+    const where = authorId ? { authorId } : { privacy: { not: 'PRIVATE' } };
 
-    return res.json();
+    const [journals, total] = await Promise.all([
+      prisma.journal.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+      }),
+      prisma.journal.count({ where }),
+    ]);
+
+    return {
+      journals,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch journals:', error);
     return { journals: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };

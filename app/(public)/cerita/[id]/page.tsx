@@ -16,19 +16,66 @@ import { id as idLocale } from 'date-fns/locale';
 import { getCurrentUser } from '@/lib/auth';
 import { ReactionButtons } from '@/components/reaction-buttons';
 import { CommentSection } from '@/components/comment-section';
+import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 async function getStory(storyId: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/stories/${storyId}`, {
-      cache: 'no-store',
+    const story = await prisma.story.findUnique({
+      where: { id: storyId },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        reactions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+        _count: {
+          select: {
+            reactions: true,
+            comments: true,
+          },
+        },
+      },
     });
 
-    if (!res.ok) {
+    if (!story) {
       return null;
     }
 
-    return res.json();
+    // Increment view count
+    await prisma.story.update({
+      where: { id: storyId },
+      data: { viewCount: { increment: 1 } },
+    });
+
+    return { story };
   } catch (error) {
     console.error('Failed to fetch story:', error);
     return null;

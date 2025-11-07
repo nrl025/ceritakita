@@ -5,19 +5,51 @@ import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { PaginationComponent } from '@/components/pagination-component';
+import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 async function getPublicStories(page: number = 1) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/stories?page=${page}&limit=12&privacy=PUBLIC`, {
-      cache: 'no-store',
-    });
+    const limit = 12;
+    const skip = (page - 1) * limit;
 
-    if (!res.ok) {
-      return { stories: [], pagination: { page: 1, limit: 12, total: 0, totalPages: 0 } };
-    }
+    const [stories, total] = await Promise.all([
+      prisma.story.findMany({
+        where: { privacy: 'PUBLIC' },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          _count: {
+            select: {
+              reactions: true,
+              comments: true,
+            },
+          },
+        },
+      }),
+      prisma.story.count({
+        where: { privacy: 'PUBLIC' },
+      }),
+    ]);
 
-    return res.json();
+    return {
+      stories,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch stories:', error);
     return { stories: [], pagination: { page: 1, limit: 12, total: 0, totalPages: 0 } };

@@ -7,21 +7,51 @@ import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { PaginationComponent } from '@/components/pagination-component';
 import { DeleteStoryButton } from '@/components/delete-story-button';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 async function getStories(page: number = 1) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/stories?page=${page}&limit=10`, {
-      cache: 'no-store',
-    });
+    const limit = 10;
+    const skip = (page - 1) * limit;
 
-    if (!res.ok) {
-      return { stories: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };
-    }
+    const [stories, total] = await Promise.all([
+      prisma.story.findMany({
+        where: { privacy: { not: 'PRIVATE' } },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          _count: {
+            select: {
+              reactions: true,
+              comments: true,
+            },
+          },
+        },
+      }),
+      prisma.story.count({
+        where: { privacy: { not: 'PRIVATE' } },
+      }),
+    ]);
 
-    return res.json();
+    return {
+      stories,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   } catch (error) {
     console.error('Failed to fetch stories:', error);
     return { stories: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };

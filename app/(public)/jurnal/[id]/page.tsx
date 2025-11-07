@@ -15,16 +15,44 @@ import { formatDistanceToNow } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { getCurrentUser } from '@/lib/auth';
 import { CommentSection } from '@/components/comment-section';
+import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 async function getJournal(journalId: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/journals/${journalId}`, {
-      cache: 'no-store',
+    const journal = await prisma.journal.findUnique({
+      where: { id: journalId },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
     });
 
-    if (!res.ok) return null;
-    return res.json();
+    if (!journal) {
+      return null;
+    }
+
+    return { journal };
   } catch (error) {
     console.error('Failed to fetch journal:', error);
     return null;
