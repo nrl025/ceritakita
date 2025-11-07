@@ -14,9 +14,18 @@ async function getPublicStories(page: number = 1) {
     const limit = 12;
     const skip = (page - 1) * limit;
 
+    // First, try to get ALL stories to check database connection
+    const allStoriesCount = await prisma.story.count();
+    console.log('Total stories in database:', allStoriesCount);
+
     const [stories, total] = await Promise.all([
       prisma.story.findMany({
-        where: { privacy: 'PUBLIC' },
+        where: { 
+          OR: [
+            { privacy: 'PUBLIC' },
+            { privacy: 'ANONYMOUS' }
+          ]
+        },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -37,9 +46,16 @@ async function getPublicStories(page: number = 1) {
         },
       }),
       prisma.story.count({
-        where: { privacy: 'PUBLIC' },
+        where: { 
+          OR: [
+            { privacy: 'PUBLIC' },
+            { privacy: 'ANONYMOUS' }
+          ]
+        },
       }),
     ]);
+
+    console.log('Public stories query result:', { storiesCount: stories.length, total, allStoriesCount });
 
     // Serialize dates
     const serializedStories = stories.map(story => ({
@@ -47,6 +63,8 @@ async function getPublicStories(page: number = 1) {
       createdAt: story.createdAt.toISOString(),
       updatedAt: story.updatedAt.toISOString(),
     }));
+
+    console.log('Serialized stories:', serializedStories.length);
 
     return {
       stories: serializedStories,
@@ -57,8 +75,13 @@ async function getPublicStories(page: number = 1) {
         totalPages: Math.ceil(total / limit),
       },
     };
-  } catch (error) {
-    console.error('Failed to fetch stories:', error);
+  } catch (error: any) {
+    console.error('Failed to fetch stories - ERROR:', {
+      message: error?.message,
+      code: error?.code,
+      meta: error?.meta,
+      stack: error?.stack
+    });
     return { stories: [], pagination: { page: 1, limit: 12, total: 0, totalPages: 0 } };
   }
 }

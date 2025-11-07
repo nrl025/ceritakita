@@ -14,9 +14,18 @@ async function getPublicJournals(page: number = 1) {
     const limit = 12;
     const skip = (page - 1) * limit;
 
+    // First, try to get ALL journals to check database connection
+    const allJournalsCount = await prisma.journal.count();
+    console.log('Total journals in database:', allJournalsCount);
+
     const [journals, total] = await Promise.all([
       prisma.journal.findMany({
-        where: { privacy: 'PUBLIC' },
+        where: { 
+          OR: [
+            { privacy: 'PUBLIC' },
+            { privacy: 'ANONYMOUS' }
+          ]
+        },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -31,9 +40,16 @@ async function getPublicJournals(page: number = 1) {
         },
       }),
       prisma.journal.count({
-        where: { privacy: 'PUBLIC' },
+        where: { 
+          OR: [
+            { privacy: 'PUBLIC' },
+            { privacy: 'ANONYMOUS' }
+          ]
+        },
       }),
     ]);
+
+    console.log('Public journals query result:', { journalsCount: journals.length, total, allJournalsCount });
 
     // Serialize dates
     const serializedJournals = journals.map(journal => ({
@@ -51,8 +67,13 @@ async function getPublicJournals(page: number = 1) {
         totalPages: Math.ceil(total / limit),
       },
     };
-  } catch (error) {
-    console.error('Failed to fetch journals:', error);
+  } catch (error: any) {
+    console.error('Failed to fetch journals - ERROR:', {
+      message: error?.message,
+      code: error?.code,
+      meta: error?.meta,
+      stack: error?.stack
+    });
     return { journals: [], pagination: { page: 1, limit: 12, total: 0, totalPages: 0 } };
   }
 }
