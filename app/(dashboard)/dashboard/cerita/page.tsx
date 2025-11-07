@@ -8,6 +8,8 @@ import { id } from 'date-fns/locale';
 import { PaginationComponent } from '@/components/pagination-component';
 import { DeleteStoryButton } from '@/components/delete-story-button';
 
+export const dynamic = 'force-dynamic';
+
 async function getStories(page: number = 1) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';

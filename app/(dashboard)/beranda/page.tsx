@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,6 +19,8 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { id as idLocale } from 'date-fns/locale';
 import { MoodTracker } from '@/components/mood-tracker';
+
+export const dynamic = 'force-dynamic';
 
 async function getDashboardData(userId: string) {
   try {
@@ -61,7 +64,12 @@ async function getDashboardData(userId: string) {
 
 export default async function BerandaPage() {
   const user = await getCurrentUser();
-  const data = await getDashboardData(user!.id);
+  
+  if (!user) {
+    redirect('/login');
+  }
+  
+  const data = await getDashboardData(user.id);
 
   const totalReactions = data.myStories.reduce((sum: number, story: any) => 
     sum + (story._count?.reactions || 0), 0

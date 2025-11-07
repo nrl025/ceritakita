@@ -9,6 +9,8 @@ import { PaginationComponent } from '@/components/pagination-component';
 import { getCurrentUser } from '@/lib/auth';
 import { DeleteJournalButton } from '@/components/delete-journal-button';
 
+export const dynamic = 'force-dynamic';
+
 async function getJournals(page: number = 1, authorId?: string) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
