@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SISWA
+  GURU
+}
+
+enum Privacy {
+  PUBLIC
+  PRIVATE
+  ANONYMOUS
+}
+
+enum MoodType {
+  SENANG
+  SEDIH
+  STRES
+  TENANG
+  CEMAS
+  MARAH
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(SISWA)
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stories   Story[]
+  journals  Journal[]
+  reactions Reaction[]
+  comments  Comment[]
+  moods     Mood[]
+
+  @@map("users")
+}
+
+model Story {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  thumbnail   String?
+  tags        String[]
+  privacy     Privacy  @default(PUBLIC)
+  isInteractive Boolean @default(false)
+  viewCount   Int      @default(0)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reactions Reaction[]
+  comments  Comment[]
+
+  @@map("stories")
+}
+
+model Journal {
+  id        String    @id @default(cuid())
+  title     String
+  content   String    @db.Text
+  privacy   Privacy   @default(PUBLIC)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  comments  Comment[]
+
+  @@map("journals")
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  type      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId   String
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, storyId, type])
+  @@map("reactions")
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  isAnonymous Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId     String?
+  story       Story?   @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  journalId   String?
+  journal     Journal? @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("comments")
+}
+
+model Mood {
+  id        String   @id @default(cuid())
+  type      MoodType
+  note      String?  @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("moods")
+}
