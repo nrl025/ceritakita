@@ -17,7 +17,7 @@ async function getJournals(page: number = 1, authorId?: string) {
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    const where = authorId ? { authorId } : { privacy: { not: 'PRIVATE' } };
+    const where = authorId ? { authorId } : { privacy: { not: 'PRIVATE' as const } };
 
     const [journals, total] = await Promise.all([
       prisma.journal.findMany({

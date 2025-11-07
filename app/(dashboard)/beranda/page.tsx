@@ -44,7 +44,7 @@ async function getDashboardData(userId: string) {
       }),
       prisma.story.findMany({
         where: {
-          privacy: { not: 'PRIVATE' },
+          privacy: { not: 'PRIVATE' as const },
         },
         take: 5,
         orderBy: { createdAt: 'desc' },

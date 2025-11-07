@@ -18,7 +18,7 @@ async function getStories(page: number = 1) {
 
     const [stories, total] = await Promise.all([
       prisma.story.findMany({
-        where: { privacy: { not: 'PRIVATE' } },
+        where: { privacy: { not: 'PRIVATE' as const } },
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -39,7 +39,7 @@ async function getStories(page: number = 1) {
         },
       }),
       prisma.story.count({
-        where: { privacy: { not: 'PRIVATE' } },
+        where: { privacy: { not: 'PRIVATE' as const } },
       }),
     ]);
 

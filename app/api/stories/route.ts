@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       where.privacy = 'PUBLIC';
     } else {
       // Default: show PUBLIC and ANONYMOUS
-      where.privacy = { not: 'PRIVATE' };
+      where.privacy = { not: 'PRIVATE' as const };
     }
 
     if (tag) {

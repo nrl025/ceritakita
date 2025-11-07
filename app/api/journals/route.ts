@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       where.privacy = privacy;
     } else {
       // Default: show PUBLIC only
-      where.privacy = { not: 'PRIVATE' };
+      where.privacy = { not: 'PRIVATE' as const };
     }
 
     // Filter by author
