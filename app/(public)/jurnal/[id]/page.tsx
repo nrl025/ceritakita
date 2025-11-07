@@ -52,7 +52,19 @@ async function getJournal(journalId: string) {
       return null;
     }
 
-    return { journal };
+    // Serialize dates to strings
+    const serializedJournal = {
+      ...journal,
+      createdAt: journal.createdAt.toISOString(),
+      updatedAt: journal.updatedAt.toISOString(),
+      comments: journal.comments.map(comment => ({
+        ...comment,
+        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt.toISOString(),
+      })),
+    };
+
+    return { journal: serializedJournal };
   } catch (error) {
     console.error('Failed to fetch journal:', error);
     return null;

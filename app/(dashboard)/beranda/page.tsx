@@ -71,12 +71,30 @@ async function getDashboardData(userId: string) {
       }),
     ]);
 
+    // Serialize dates
+    const serializedMyStories = myStories.map(story => ({
+      ...story,
+      createdAt: story.createdAt.toISOString(),
+      updatedAt: story.updatedAt.toISOString(),
+    }));
+
+    const serializedRecentStories = recentStories.map(story => ({
+      ...story,
+      createdAt: story.createdAt.toISOString(),
+      updatedAt: story.updatedAt.toISOString(),
+    }));
+
+    const serializedMoods = moods.map(mood => ({
+      ...mood,
+      createdAt: mood.createdAt.toISOString(),
+    }));
+
     return {
       myStoriesCount: myStories.length,
       myJournalsCount: myJournals.length,
-      myStories,
-      recentStories,
-      moods,
+      myStories: serializedMyStories,
+      recentStories: serializedRecentStories,
+      moods: serializedMoods,
     };
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error);

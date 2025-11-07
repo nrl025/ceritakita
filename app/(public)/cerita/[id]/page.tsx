@@ -75,7 +75,23 @@ async function getStory(storyId: string) {
       data: { viewCount: { increment: 1 } },
     });
 
-    return { story };
+    // Serialize dates to strings
+    const serializedStory = {
+      ...story,
+      createdAt: story.createdAt.toISOString(),
+      updatedAt: story.updatedAt.toISOString(),
+      comments: story.comments.map(comment => ({
+        ...comment,
+        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt.toISOString(),
+      })),
+      reactions: story.reactions.map(reaction => ({
+        ...reaction,
+        createdAt: reaction.createdAt.toISOString(),
+      })),
+    };
+
+    return { story: serializedStory };
   } catch (error) {
     console.error('Failed to fetch story:', error);
     return null;

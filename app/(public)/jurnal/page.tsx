@@ -35,8 +35,15 @@ async function getPublicJournals(page: number = 1) {
       }),
     ]);
 
+    // Serialize dates
+    const serializedJournals = journals.map(journal => ({
+      ...journal,
+      createdAt: journal.createdAt.toISOString(),
+      updatedAt: journal.updatedAt.toISOString(),
+    }));
+
     return {
-      journals,
+      journals: serializedJournals,
       pagination: {
         page,
         limit,

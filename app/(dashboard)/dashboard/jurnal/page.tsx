@@ -38,8 +38,15 @@ async function getJournals(page: number = 1, authorId?: string) {
       prisma.journal.count({ where }),
     ]);
 
+    // Serialize dates
+    const serializedJournals = journals.map(journal => ({
+      ...journal,
+      createdAt: journal.createdAt.toISOString(),
+      updatedAt: journal.updatedAt.toISOString(),
+    }));
+
     return {
-      journals,
+      journals: serializedJournals,
       pagination: {
         page,
         limit,

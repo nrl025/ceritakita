@@ -43,8 +43,15 @@ async function getStories(page: number = 1) {
       }),
     ]);
 
+    // Serialize dates
+    const serializedStories = stories.map(story => ({
+      ...story,
+      createdAt: story.createdAt.toISOString(),
+      updatedAt: story.updatedAt.toISOString(),
+    }));
+
     return {
-      stories,
+      stories: serializedStories,
       pagination: {
         page,
         limit,
