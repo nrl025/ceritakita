@@ -43,11 +43,12 @@ interface Comment {
 interface CommentSectionProps {
   storyId?: string;
   journalId?: string;
+  announcementId?: string;
   comments: Comment[];
   currentUser: any;
 }
 
-export function CommentSection({ storyId, journalId, comments: initialComments, currentUser }: CommentSectionProps) {
+export function CommentSection({ storyId, journalId, announcementId, comments: initialComments, currentUser }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [newComment, setNewComment] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -83,6 +84,7 @@ export function CommentSection({ storyId, journalId, comments: initialComments, 
         body: JSON.stringify({ 
           storyId, 
           journalId,
+          announcementId,
           content: newComment,
           isAnonymous 
         }),
@@ -127,6 +129,7 @@ export function CommentSection({ storyId, journalId, comments: initialComments, 
         body: JSON.stringify({ 
           storyId, 
           journalId,
+          announcementId,
           content: replyContent,
           isAnonymous: false,
           parentId

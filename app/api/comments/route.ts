@@ -10,11 +10,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { storyId, journalId, content, isAnonymous, parentId } = await req.json();
+    const { storyId, journalId, announcementId, content, isAnonymous, parentId } = await req.json();
 
-    if ((!storyId && !journalId) || !content) {
+    if ((!storyId && !journalId && !announcementId) || !content) {
       return NextResponse.json(
-        { error: 'StoryId atau JournalId dan content wajib diisi' },
+        { error: 'StoryId, JournalId, atau AnnouncementId dan content wajib diisi' },
         { status: 400 }
       );
     }
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         storyId: storyId || null,
         journalId: journalId || null,
+        announcementId: announcementId || null,
         isAnonymous: isAnonymous || false,
         parentId: parentId || null,
       },

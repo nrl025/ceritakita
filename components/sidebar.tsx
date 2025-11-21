@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, BookMarked, Smile, X } from 'lucide-react';
+import { Home, BookOpen, BookMarked, Smile, Bell, X } from 'lucide-react';
 
 interface SidebarProps {
   userRole: 'SISWA' | 'GURU';
@@ -17,6 +17,7 @@ export function Sidebar({ userRole }: SidebarProps) {
     { icon: Home, label: 'Beranda', href: '/beranda' },
     { icon: BookOpen, label: 'Cerita Saya', href: '/dashboard/cerita' },
     { icon: BookMarked, label: 'Diary Saya', href: '/dashboard/diary' },
+    { icon: Bell, label: 'Sistem Informasi', href: '/dashboard/sistem-informasi' },
     { icon: Smile, label: 'Riwayat Mood', href: '/dashboard/mood' },
   ];
 
@@ -24,7 +25,8 @@ export function Sidebar({ userRole }: SidebarProps) {
     { icon: Home, label: 'Beranda', href: '/beranda' },
     { icon: BookOpen, label: 'Kelola Cerita', href: '/dashboard/cerita' },
     { icon: BookMarked, label: 'Diary Siswa', href: '/dashboard/diary' },
-    { icon: Smile, label: 'Riwayat Mood', href: '/dashboard/mood' },
+    { icon: Bell, label: 'Sistem Informasi', href: '/dashboard/sistem-informasi' },
+    { icon: Smile, label: 'Mood Siswa', href: '/dashboard/mood' },
   ];
 
   const menu = userRole === 'GURU' ? guruMenu : siswaMenu;
