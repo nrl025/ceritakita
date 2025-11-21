@@ -6,6 +6,7 @@ import { id } from 'date-fns/locale';
 import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { MoodDashboard } from '@/components/mood-dashboard';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,6 +67,45 @@ export default async function RiwayatMoodPage() {
 
   const data = await getMoods(user.id);
 
+  // Jika user adalah guru, tampilkan dashboard mood siswa
+  if (user.role === 'GURU') {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+        {/* Header */}
+        <div className="flex items-start gap-3 md:gap-4">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-black rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+            <Smile className="text-white" size={20} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-black mb-1 md:mb-2">Dashboard Mood Siswa</h1>
+            <p className="text-sm md:text-base text-gray-600">Pantau perkembangan emosional siswa dari waktu ke waktu</p>
+          </div>
+        </div>
+
+        {/* Mood Dashboard */}
+        <MoodDashboard />
+
+        {/* Tips Card */}
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3 md:gap-4">
+              <div className="text-2xl md:text-3xl flex-shrink-0">👨‍🏫</div>
+              <div>
+                <h3 className="font-bold text-black mb-2 text-sm md:text-base">Tips untuk Guru</h3>
+                <p className="text-xs md:text-sm text-gray-700 leading-relaxed">
+                  Gunakan data mood siswa untuk memahami kondisi emosional kelas. Jika ada siswa yang 
+                  konsisten menunjukkan mood negatif, pertimbangkan untuk melakukan pendekatan personal 
+                  atau memberikan dukungan yang diperlukan.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Jika user adalah siswa, tampilkan riwayat mood pribadi
   return (
     <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
       {/* Header */}

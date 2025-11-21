@@ -113,10 +113,10 @@ export function Navbar() {
               Cerita
             </Link>
             <Link
-              href="/jurnal"
+              href="/diary"
               className="text-black hover:text-gray-600 transition font-medium"
             >
-              Jurnal
+              Diary
             </Link>
           </div>
 
@@ -204,11 +204,11 @@ export function Navbar() {
               Cerita
             </Link>
             <Link
-              href="/jurnal"
+              href="/diary"
               onClick={() => setMobileMenuOpen(false)}
               className="block px-4 py-2 text-black hover:bg-gray-100 transition font-medium rounded-lg"
             >
-              Jurnal
+              Diary
             </Link>
             {!user && (
               <Link

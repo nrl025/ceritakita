@@ -25,7 +25,7 @@ export const dynamic = 'force-dynamic';
 async function getDashboardData(userId: string) {
   try {
     // Fetch data directly from database instead of API routes
-    const [myStories, myJournals, recentStories, moods] = await Promise.all([
+    const [myStories, myDiaries, recentStories, moods] = await Promise.all([
       prisma.story.findMany({
         where: { authorId: userId },
         include: {
@@ -91,7 +91,7 @@ async function getDashboardData(userId: string) {
 
     return {
       myStoriesCount: myStories.length,
-      myJournalsCount: myJournals.length,
+      myDiariesCount: myDiaries.length,
       myStories: serializedMyStories,
       recentStories: serializedRecentStories,
       moods: serializedMoods,
@@ -100,7 +100,7 @@ async function getDashboardData(userId: string) {
     console.error('Failed to fetch dashboard data:', error);
     return {
       myStoriesCount: 0,
-      myJournalsCount: 0,
+      myDiariesCount: 0,
       myStories: [],
       recentStories: [],
       moods: [],
@@ -179,8 +179,8 @@ export default async function BerandaPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Jurnal Saya</p>
-                <p className="text-3xl font-bold text-black">{data.myJournalsCount}</p>
+                <p className="text-sm text-gray-600 mb-1">Diary Saya</p>
+                <p className="text-3xl font-bold text-black">{data.myDiariesCount}</p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                 <BookMarked size={24} className="text-purple-600" />
@@ -219,7 +219,7 @@ export default async function BerandaPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className={`grid grid-cols-1 ${user?.role === 'GURU' ? 'md:grid-cols-2' : ''} gap-4`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link href="/dashboard/cerita/buat">
           <Card className="hover:shadow-lg transition cursor-pointer border-2 hover:border-black">
             <CardContent className="p-6">
@@ -236,8 +236,8 @@ export default async function BerandaPage() {
           </Card>
         </Link>
 
-        {user?.role === 'GURU' && (
-          <Link href="/dashboard/jurnal/buat">
+        {user?.role === 'SISWA' && (
+          <Link href="/dashboard/diary/buat">
             <Card className="hover:shadow-lg transition cursor-pointer border-2 hover:border-purple-500">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
@@ -245,7 +245,7 @@ export default async function BerandaPage() {
                     <BookMarked className="text-white" size={28} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-black mb-1">Tulis Jurnal Harian</h3>
+                    <h3 className="text-lg font-bold text-black mb-1">Tulis Diary Harian</h3>
                     <p className="text-sm text-gray-600">Refleksikan hari dan perasaanmu</p>
                   </div>
                 </div>

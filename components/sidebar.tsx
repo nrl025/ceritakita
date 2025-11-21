@@ -16,13 +16,14 @@ export function Sidebar({ userRole }: SidebarProps) {
   const siswaMenu = [
     { icon: Home, label: 'Beranda', href: '/beranda' },
     { icon: BookOpen, label: 'Cerita Saya', href: '/dashboard/cerita' },
+    { icon: BookMarked, label: 'Diary Saya', href: '/dashboard/diary' },
     { icon: Smile, label: 'Riwayat Mood', href: '/dashboard/mood' },
   ];
 
   const guruMenu = [
     { icon: Home, label: 'Beranda', href: '/beranda' },
     { icon: BookOpen, label: 'Kelola Cerita', href: '/dashboard/cerita' },
-    { icon: BookMarked, label: 'Kelola Jurnal', href: '/dashboard/jurnal' },
+    { icon: BookMarked, label: 'Diary Siswa', href: '/dashboard/diary' },
     { icon: Smile, label: 'Riwayat Mood', href: '/dashboard/mood' },
   ];
 

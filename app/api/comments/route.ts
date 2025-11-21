@@ -10,13 +10,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { storyId, journalId, content, isAnonymous } = await req.json();
+    const { storyId, journalId, content, isAnonymous, parentId } = await req.json();
 
     if ((!storyId && !journalId) || !content) {
       return NextResponse.json(
         { error: 'StoryId atau JournalId dan content wajib diisi' },
         { status: 400 }
       );
+    }
+
+    if (parentId) {
+      const parentComment = await prisma.comment.findUnique({
+        where: { id: parentId },
+      });
+
+      if (!parentComment) {
+        return NextResponse.json(
+          { error: 'Parent comment tidak ditemukan' },
+          { status: 404 }
+        );
+      }
     }
 
     const comment = await prisma.comment.create({
@@ -26,6 +39,7 @@ export async function POST(req: NextRequest) {
         storyId: storyId || null,
         journalId: journalId || null,
         isAnonymous: isAnonymous || false,
+        parentId: parentId || null,
       },
       include: {
         user: {
@@ -33,6 +47,20 @@ export async function POST(req: NextRequest) {
             id: true,
             name: true,
             avatar: true,
+          },
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'asc',
           },
         },
       },

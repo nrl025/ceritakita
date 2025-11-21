@@ -104,6 +104,9 @@ model Comment {
   story       Story?   @relation(fields: [storyId], references: [id], onDelete: Cascade)
   journalId   String?
   journal     Journal? @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  parentId    String?
+  parent      Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[] @relation("CommentReplies")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
